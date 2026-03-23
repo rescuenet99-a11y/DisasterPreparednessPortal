@@ -14,7 +14,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 2; // Default to SOS screen as per Image 1
+  int _currentIndex = 0; // Default to Home screen
 
   void _switchTab(int index) {
     setState(() {

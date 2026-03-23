@@ -108,22 +108,35 @@ class _SosScreenState extends State<SosScreen> with SingleTickerProviderStateMix
     return Scaffold(
       appBar: const CustomAppBar(showSignalStrength: true),
       drawer: const AppDrawer(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFF5F7FA), Color(0xFFFFEBEE)],
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
 
             const Text(
               'EMERGENCY',
               style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.w900,
-                color: AppColors.textPrimary,
+                color: Color(0xFF263238),
+                letterSpacing: -1.0,
               ),
             ),
-
-            const SizedBox(height: 20),
+            const SizedBox(height: 6),
+            const Text(
+              'Hold tight — help is one tap away',
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 28),
 
             // 🔥 SOS BUTTON
             GestureDetector(
@@ -138,16 +151,35 @@ class _SosScreenState extends State<SosScreen> with SingleTickerProviderStateMix
                       height: 200,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: _isSosSent ? Colors.green : AppColors.primaryRed,
+                        color: _isSosSent ? const Color(0xFF2E7D32) : AppColors.primaryRed,
+                        boxShadow: [
+                          BoxShadow(
+                            color: (_isSosSent ? const Color(0xFF2E7D32) : AppColors.primaryRed).withOpacity(0.45),
+                            blurRadius: 30,
+                            spreadRadius: 8,
+                          ),
+                        ],
                       ),
                       child: Center(
-                        child: Text(
-                          _isSosSent ? "SENT" : "SEND SOS",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              _isSosSent ? Icons.check_circle_outline : Icons.crisis_alert,
+                              color: Colors.white,
+                              size: 40,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _isSosSent ? 'SENT' : 'SEND SOS',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -156,26 +188,55 @@ class _SosScreenState extends State<SosScreen> with SingleTickerProviderStateMix
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 28),
 
-            const Text(
-              "Tap button to request emergency help",
-              textAlign: TextAlign.center,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.info_outline, color: AppColors.primaryTeal, size: 18),
+                  const SizedBox(width: 10),
+                  const Flexible(
+                    child: Text(
+                      'Tap button to request emergency help',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
-            TextButton(
+            OutlinedButton.icon(
               onPressed: _cancelSOS,
-              child: const Text(
-                'CANCEL REQUEST',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              icon: const Icon(Icons.cancel_outlined, size: 18),
+              label: const Text('CANCEL REQUEST', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primaryRed,
+                side: const BorderSide(color: AppColors.primaryRed),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
 
             const SizedBox(height: 40),
           ],
         ),
+      ),
       ),
     );
   }

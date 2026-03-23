@@ -64,11 +64,19 @@ class _ReportScreenState extends State<ReportScreen> {
     return Scaffold(
       appBar: const CustomAppBar(),
       drawer: const AppDrawer(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF5F7FA), Color(0xFFE0F2F1)],
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             const SizedBox(height: 10),
             const Text(
               'SENTINEL SERVICE',
@@ -106,9 +114,9 @@ class _ReportScreenState extends State<ReportScreen> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -308,6 +316,7 @@ class _ReportScreenState extends State<ReportScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -315,18 +324,25 @@ class _ReportScreenState extends State<ReportScreen> {
     final bool isSelected = _selectedType == title;
 
     return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedType = title;
-        });
-      },
-      borderRadius: BorderRadius.circular(12),
+      onTap: () => setState(() => _selectedType = title),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryTeal : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? AppColors.primaryTeal : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryTeal : Colors.grey.shade200,
+            width: 1.5,
+          ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: AppColors.primaryTeal.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            )
+          ] : [],
         ),
         child: Column(
           children: [

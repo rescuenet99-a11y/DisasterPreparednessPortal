@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import '../theme/app_colors.dart';
 import '../widgets/custom_app_bar.dart';
@@ -24,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isFoodStocked = false;
 
   LatLng? _currentPosition;
-  GoogleMapController? mapController;
+  final MapController mapController = MapController();
 
   @override
   void initState() {
@@ -51,7 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _currentPosition = LatLng(position.latitude, position.longitude);
       });
-      mapController?.animateCamera(CameraUpdate.newLatLngZoom(_currentPosition!, 14));
     }
   }
 
@@ -79,15 +79,19 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: const CustomAppBar(),
       drawer: const AppDrawer(),
 
-      body: SingleChildScrollView(
-
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-
-        child: Column(
-
-          crossAxisAlignment: CrossAxisAlignment.start,
-
-          children: [
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF5F7FA), Color(0xFFE0F2F1)],
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
             const SizedBox(height: 10),
 
@@ -333,23 +337,28 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(19),
                   child: _currentPosition == null
                     ? const Center(child: CircularProgressIndicator())
-                    : GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target: _currentPosition!,
-                          zoom: 14.0,
+                    : FlutterMap(
+                        mapController: mapController,
+                        options: MapOptions(
+                          initialCenter: _currentPosition!,
+                          initialZoom: 14.0,
                         ),
-                        onMapCreated: (controller) => mapController = controller,
-                        myLocationEnabled: true,
-                        myLocationButtonEnabled: false,
-                        zoomControlsEnabled: false,
-                        markers: {
-                          Marker(
-                            markerId: const MarkerId('current_location'),
-                            position: _currentPosition!,
-                            infoWindow: const InfoWindow(title: 'You are here'),
-                            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+                        children: [
+                          TileLayer(
+                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: 'com.example.disaster_portal',
                           ),
-                        },
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: _currentPosition!,
+                                width: 40,
+                                height: 40,
+                                child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                 ),
               ),
@@ -429,6 +438,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+      ), // closes gradient Container
     );
   }
 
@@ -490,9 +500,9 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
           ],
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:geolocator/geolocator.dart';
@@ -19,9 +20,9 @@ class _SheltersScreenState extends State<SheltersScreen> {
 
   double? latitude;
   double? longitude;
-  GoogleMapController? mapController;
+  final MapController mapController = MapController();
 
-  Set<Marker> _markers = {};
+  List<Marker> _markers = [];
   StreamSubscription<QuerySnapshot>? _sheltersSub;
   
   final List<Map<String, dynamic>> _dummyShelters = [
@@ -40,11 +41,11 @@ class _SheltersScreenState extends State<SheltersScreen> {
 
   void _loadDummyMarkers() {
     _markers = _dummyShelters.map((s) => Marker(
-      markerId: MarkerId(s['name'] as String),
-      position: LatLng(s['lat'] as double, s['lng'] as double),
-      infoWindow: InfoWindow(title: s['name'] as String, snippet: 'Verified Safe Zone'),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-    )).toSet();
+      point: LatLng(s['lat'] as double, s['lng'] as double),
+      width: 40,
+      height: 40,
+      child: const Icon(Icons.location_on, color: Colors.green, size: 40),
+    )).toList();
   }
 
   void _initFirestoreListener() {
@@ -53,17 +54,17 @@ class _SheltersScreenState extends State<SheltersScreen> {
         _sheltersSub = FirebaseFirestore.instance.collection('shelters').snapshots().listen((snapshot) {
            if (snapshot.docs.isNotEmpty && mounted) {
               setState(() {
-                 _markers = _markers.union(snapshot.docs.map((doc) {
+                 _markers.addAll(snapshot.docs.map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
                     final lat = data['lat'] as double? ?? 0.0;
                     final lng = data['lng'] as double? ?? 0.0;
                     return Marker(
-                      markerId: MarkerId(doc.id),
-                      position: LatLng(lat, lng),
-                      infoWindow: InfoWindow(title: data['name'] ?? 'Shelter', snippet: 'Live Update'),
-                      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+                      point: LatLng(lat, lng),
+                      width: 40,
+                      height: 40,
+                      child: const Icon(Icons.location_on, color: Colors.green, size: 40),
                     );
-                 }).toSet());
+                 }).toList());
               });
            }
         });
@@ -116,7 +117,6 @@ class _SheltersScreenState extends State<SheltersScreen> {
         latitude = position.latitude;
         longitude = position.longitude;
       });
-      mapController?.animateCamera(CameraUpdate.newLatLng(LatLng(latitude!, longitude!)));
     }
   }
 
@@ -175,17 +175,19 @@ class _SheltersScreenState extends State<SheltersScreen> {
       appBar: const CustomAppBar(),
       drawer: const AppDrawer(),
 
-      body: SingleChildScrollView(
-
-        padding:
-        const EdgeInsets.symmetric(horizontal: 20),
-
-        child: Column(
-
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
-
-          children: [
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF5F7FA), Color(0xFFE0F2F1)],
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
             const SizedBox(height: 10),
 
@@ -220,16 +222,29 @@ class _SheltersScreenState extends State<SheltersScreen> {
                 borderRadius: BorderRadius.circular(19),
                 child: latitude == null || longitude == null
                   ? const Center(child: CircularProgressIndicator())
-                  : GoogleMap(
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(latitude!, longitude!),
-                        zoom: 13.0,
+                  : FlutterMap(
+                      mapController: mapController,
+                      options: MapOptions(
+                        initialCenter: LatLng(latitude!, longitude!),
+                        initialZoom: 13.0,
                       ),
-                      onMapCreated: (controller) => mapController = controller,
-                      myLocationEnabled: true,
-                      myLocationButtonEnabled: true,
-                      zoomControlsEnabled: true,
-                      markers: _markers.isNotEmpty ? _markers : <Marker>{},
+                      children: [
+                        TileLayer(
+                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.disaster_portal',
+                        ),
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: LatLng(latitude!, longitude!),
+                              width: 40,
+                              height: 40,
+                              child: const Icon(Icons.my_location, color: Colors.blue, size: 40),
+                            ),
+                            ..._markers,
+                          ],
+                        ),
+                      ],
                     ),
               ),
             ),
@@ -295,9 +310,9 @@ class _SheltersScreenState extends State<SheltersScreen> {
             ),
 
             const SizedBox(height: 40),
-
           ],
         ),
+      ),
       ),
     );
   }
@@ -334,16 +349,16 @@ class _SheltersScreenState extends State<SheltersScreen> {
           AppColors.cardBackground,
 
           borderRadius:
-          BorderRadius.circular(16),
+          BorderRadius.circular(20),
 
           boxShadow: [
 
             BoxShadow(
               color:
-              Colors.black.withOpacity(0.04),
-              blurRadius: 10,
+              Colors.black.withOpacity(0.06),
+              blurRadius: 12,
               offset:
-              const Offset(0, 4),
+              const Offset(0, 6),
             ),
 
           ],
